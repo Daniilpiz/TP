@@ -1,0 +1,9 @@
+# ninja log v7
+18	441	8161369219432181	CMakeFiles/Lab4.dir/src/FileProcessor.cpp.obj	3bc38e63c74d7b91
+28	784	8161369219526494	CMakeFiles/Lab4.dir/src/ProcessingEngine.cpp.obj	b82dde8ddb17afde
+33	798	8161369219574291	CMakeFiles/Lab4.dir/src/AsyncProcessor.cpp.obj	732db37ba33041a
+24	947	8161369219490678	CMakeFiles/Lab4.dir/src/DirectoryWatcher.cpp.obj	952129179ee277c1
+39	957	8161369219654619	CMakeFiles/Lab4.dir/src/main.cpp.obj	7d8b9deed0a50490
+14	1878	8161369219390883	CMakeFiles/Lab2Lib.dir/src/Lab2Markdown.cpp.obj	30baffe90f69d8e
+1879	2064	8161369238030774	libLab2Lib.a	6d6fc727f3b79b55
+2064	2270	8161369239890027	Lab4.exe	151db7a999d7aca7

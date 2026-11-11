@@ -1,0 +1,4 @@
+C:/Users/user/Desktop/Технологии программирования/TP/lab4/build/CMakeFiles/Lab2Lib.dir
+C:/Users/user/Desktop/Технологии программирования/TP/lab4/build/CMakeFiles/Lab4.dir
+C:/Users/user/Desktop/Технологии программирования/TP/lab4/build/CMakeFiles/edit_cache.dir
+C:/Users/user/Desktop/Технологии программирования/TP/lab4/build/CMakeFiles/rebuild_cache.dir
