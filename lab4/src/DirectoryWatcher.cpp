@@ -58,6 +58,8 @@ void DirectoryWatcher::scanOnce() {
         if (it == known_.end() || it->second != mtime) {
             known_[path] = mtime;
             queue_.push(path);
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     }
 }

@@ -2,8 +2,10 @@
 #include "Lab2Lib.h"
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 std::string processFile(const std::string& path) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     std::ifstream f(path);
     if (!f) return "ERROR: cannot open " + path;
 

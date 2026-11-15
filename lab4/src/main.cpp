@@ -33,7 +33,7 @@ int main() {
     if (!fs::is_directory(dir)) { std::cerr << "Not a directory\n"; return 1; }
 
     watcher.start(dir);
-    engine.start();
+    // engine.start();
 
     bool quit = false;
     while (!quit) {
@@ -56,7 +56,7 @@ int main() {
         case 1: {
             auto s = queue.snapshot();
             std::cout << "Queue size: " << s.size() << "\n";
-            for (auto& p : s) std::cout << "  " << p << "\n";
+            std::cout << "Engine processed: " << engine.getProcessedCount() << " files\n"; // <--- ДОБАВИТЬ
             break;
         }
         case 2: {
