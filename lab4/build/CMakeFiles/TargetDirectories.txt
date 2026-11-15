@@ -1,4 +1,0 @@
-/workspace/lab4/build/CMakeFiles/mdform.dir
-/workspace/lab4/build/CMakeFiles/Lab4.dir
-/workspace/lab4/build/CMakeFiles/edit_cache.dir
-/workspace/lab4/build/CMakeFiles/rebuild_cache.dir
