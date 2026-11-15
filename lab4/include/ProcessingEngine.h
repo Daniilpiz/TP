@@ -6,11 +6,13 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include "Lab2Adapter.h"
 #include "ThreadSafeQueue.h"
 
 class ProcessingEngine {
 public:
-    explicit ProcessingEngine(ThreadSafeQueue<std::string>& queue);
+    explicit ProcessingEngine(ThreadSafeQueue<std::string>& queue,
+                              const lab4::Lab2Adapter& lab2);
     ~ProcessingEngine();
 
     void start();
@@ -26,6 +28,7 @@ private:
     void worker();
 
     ThreadSafeQueue<std::string>& queue_;
+    const lab4::Lab2Adapter& lab2_;
     std::vector<std::thread> workers_;
     std::atomic<bool> running_{false};
 

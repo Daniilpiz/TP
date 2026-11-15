@@ -11,6 +11,7 @@ public:
     void push(T value) {
         {
             std::lock_guard<std::mutex> lk(mtx_);
+            if (stopped_) return;          // в остановленную очередь не добавляем
             q_.push(std::move(value));
         }
         cv_.notify_one();
@@ -51,6 +52,12 @@ public:
             stopped_ = true;
         }
         cv_.notify_all();
+    }
+
+    // Повторный запуск после stop(): позволяет возобновить работу движка.
+    void resume() {
+        std::lock_guard<std::mutex> lk(mtx_);
+        stopped_ = false;
     }
 
 private:

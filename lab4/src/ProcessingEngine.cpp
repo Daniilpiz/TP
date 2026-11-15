@@ -2,13 +2,15 @@
 #include "FileProcessor.h"
 #include <algorithm>
 
-ProcessingEngine::ProcessingEngine(ThreadSafeQueue<std::string>& queue)
-    : queue_(queue) {}
+ProcessingEngine::ProcessingEngine(ThreadSafeQueue<std::string>& queue,
+                                   const lab4::Lab2Adapter& lab2)
+    : queue_(queue), lab2_(lab2) {}
 
 ProcessingEngine::~ProcessingEngine() { stop(); }
 
 void ProcessingEngine::start() {
     if (running_) return;
+    queue_.resume();   // очередь могла быть остановлена предыдущим stop()
     running_ = true;
     unsigned n = std::max(1u, std::thread::hardware_concurrency());
     for (unsigned i = 0; i < n; ++i)
@@ -29,6 +31,7 @@ void ProcessingEngine::worker() {
             std::lock_guard<std::mutex> lk(seenMtx_);
             seenFiles_.insert(path);
         }
+        std::string r = processFile(path, lab2_);
         std::string r = processFile(path);        std::string r = processFile(path);
         {
             std::lock_guard<std::mutex> lk(resultsMtx_);
