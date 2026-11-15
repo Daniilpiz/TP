@@ -32,9 +32,11 @@ void ProcessingEngine::worker() {
             seenFiles_.insert(path);
         }
         std::string r = processFile(path, lab2_);
+        std::string r = processFile(path);        std::string r = processFile(path);
         {
             std::lock_guard<std::mutex> lk(resultsMtx_);
             results_[path] = r;
+            processedCount_++; // <--- ДОБАВИТЬ
         }
     }
 }

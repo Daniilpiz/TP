@@ -68,6 +68,12 @@ void DirectoryWatcher::scanOnce() {
                 known_[path] = mtime;
                 queue_.push(path);
             }
+        auto it = known_.find(path);
+        if (it == known_.end() || it->second != mtime) {
+            known_[path] = mtime;
+            queue_.push(path);
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     } catch (const fs::filesystem_error&) {
         // каталог временно недоступен - следующая итерация попробует снова
