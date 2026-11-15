@@ -2,3 +2,4 @@ build/
 *.obj
 *.exe
 *.a
+*.md

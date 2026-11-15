@@ -1,40 +1,42 @@
+# Лабораторная работа №4. Многопоточная и асинхронная обработка файлов.
+#
+# Сборка:
+#   cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+#   cmake --build build
+# либо просто запустить .\build.bat (автоматически выбирает инструменты).
+#
+# Внимание: на Windows, если в пути к проекту есть не-ASCII символы (кириллица),
+# используйте генератор Ninja или Visual Studio: генератор "MinGW Makefiles"
+# не находит исходники из-за неправильной кодировки путей в Makefile.
+
 cmake_minimum_required(VERSION 3.16)
 project(Lab4 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(MSVC)
-    add_compile_options(/utf-8 /W3)      # исходники в UTF-8
-else()
-    add_compile_options(-Wall -Wextra)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-# ---- Библиотека ЛР №2/№3 (mdform): регулярные выражения, Markdown, анкета ----
-# Используется РЕАЛЬНЫЙ код лабораторных работ №2 и №3, а не упрощённая заглушка.
-add_library(mdform STATIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/../lab3/library/src/markdown.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../lab3/library/src/form.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../lab3/library/src/app.cpp)
-target_include_directories(mdform PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../lab3/library/include)
-
-# ---- Основная программа ЛР №4 ----
-add_executable(Lab4
-    src/Lab2Adapter.cpp
-    src/FileProcessor.cpp
-    src/DirectoryWatcher.cpp
-    src/ProcessingEngine.cpp
-    src/AsyncProcessor.cpp
-    src/main.cpp
-)
-
-target_include_directories(Lab4 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 find_package(Threads REQUIRED)
-target_link_libraries(Lab4 PRIVATE mdform Threads::Threads)
 
-# Словари кладём рядом с исполняемым файлом (каталог data) - генератор анкет ЛР2
-add_custom_command(TARGET Lab4 POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/../lab3/data $<TARGET_FILE_DIR:Lab4>/data)
+add_executable(lab4
+    main.cpp
+    application.cpp
+    file_processor.cpp
+)
+target_link_libraries(lab4 PRIVATE Threads::Threads)
+
+# legacy/lab2.h объявляет API ЛР2; сами алгоритмы подключаются как заголовки,
+# поэтому сборка выполняется в статическом режиме (без dllimport/dllexport).
+target_compile_definitions(lab4 PRIVATE LAB2_STATIC)
+
+if(MSVC)
+    target_compile_options(lab4 PRIVATE /utf-8 /W4)
+else()
+    target_compile_options(lab4 PRIVATE -Wall -Wextra -Wpedantic)
+    # MinGW: link the C++ runtime statically so lab4.exe runs by double-click
+    # without MSYS2 DLLs (libstdc++-6.dll etc.) on PATH.
+    target_link_options(lab4 PRIVATE -static)
+endif()
