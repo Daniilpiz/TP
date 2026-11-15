@@ -2,6 +2,7 @@
 #pragma once
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <filesystem>
 #include <map>
 #include <mutex>
@@ -28,6 +29,7 @@ private:
     std::atomic<bool> running_{false};
 
     mutable std::mutex dirMtx_;
+    std::condition_variable wakeCv_;      // мгновенный выход из паузы при stop()
     std::string currentDir_;
     bool dirChanged_ = false;
 

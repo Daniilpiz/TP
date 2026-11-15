@@ -1,7 +1,8 @@
-// AsyncProcessor.cpp
 #include "AsyncProcessor.h"
 #include "FileProcessor.h"
 #include <algorithm>
+
+AsyncProcessor::AsyncProcessor(const lab4::Lab2Adapter& lab2) : lab2_(lab2) {}
 
 AsyncProcessor::~AsyncProcessor() {
     cancel();
@@ -9,7 +10,7 @@ AsyncProcessor::~AsyncProcessor() {
 }
 
 void AsyncProcessor::startAsync(const std::vector<std::string>& files) {
-    // завершить предыдущую операцию
+    // завершить предыдущую операцию (join только из потока-создателя runner_)
     cancel();
     waitAll();
 
@@ -18,12 +19,12 @@ void AsyncProcessor::startAsync(const std::vector<std::string>& files) {
         status_.clear();
         results_.clear();
         for (const auto& f : files) status_[f] = TaskStatus::Pending;
+        cancelled_ = false;   // сброс флага под мьютексом - вместе с очисткой карт
     }
 
-    cancelled_ = false;
-    running_   = true;
+    running_ = true;
 
-    runner_ = std::thread([this, files]() {
+    runner_ = std::make_shared<std::thread>([this, files]() {
         unsigned hw = std::max(1u, std::thread::hardware_concurrency());
         std::atomic<std::size_t> idx{0};
 
@@ -40,7 +41,7 @@ void AsyncProcessor::startAsync(const std::vector<std::string>& files) {
                 }
 
                 std::string r;
-                try { r = processFile(f); }
+                try { r = processFile(f, lab2_); }
                 catch (...) {
                     std::lock_guard<std::mutex> lk(mtx_);
                     status_[f] = TaskStatus::Failed;
@@ -63,7 +64,12 @@ void AsyncProcessor::startAsync(const std::vector<std::string>& files) {
 void AsyncProcessor::cancel() { cancelled_ = true; }
 
 void AsyncProcessor::waitAll() {
-    if (runner_.joinable()) runner_.join();
+    std::shared_ptr<std::thread> r;
+    {
+        std::lock_guard<std::mutex> lk(mtx_);
+        r = std::move(runner_);   // забираем владение потоком
+    }
+    if (r && r->joinable()) r->join();
 }
 
 TaskStatus AsyncProcessor::getStatus(const std::string& file) const {
