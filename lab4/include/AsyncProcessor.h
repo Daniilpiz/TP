@@ -10,7 +10,7 @@
 
 #include "Lab2Adapter.h"
 
-enum class TaskStatus { Pending, Processing, Done, Cancelled, Failed };
+enum class TaskStatus { Pending, Processing, Done, Cancelled, Failed, Blocked, LimitReached };
 
 class AsyncProcessor {
 public:
@@ -34,6 +34,10 @@ public:
     std::map<std::string, std::pair<TaskStatus, std::string>> snapshot() const;
 
 private:
+    // Пересчёт статусов Blocked / LimitReached по данным AccessPolicy.
+    // Возвращает актуальную карту «файл -> статус».
+    std::map<std::string, TaskStatus> refreshBlockedStatuses();
+
     const lab4::Lab2Adapter& lab2_;
     std::atomic<bool> running_{false};
     std::atomic<bool> cancelled_{false};

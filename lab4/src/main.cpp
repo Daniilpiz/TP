@@ -9,21 +9,32 @@
 #include <sstream>
 #include <string>
 
+#include "AccessPolicy.h"
 #include "AsyncProcessor.h"
 #include "DirectoryWatcher.h"
+#include "FileProcessor.h"
 #include "Lab2Adapter.h"
 #include "ProcessingEngine.h"
 #include "ThreadSafeQueue.h"
 
 static const char* statusName(TaskStatus s) {
     switch (s) {
-        case TaskStatus::Pending:    return "Pending";
-        case TaskStatus::Processing: return "Processing";
-        case TaskStatus::Done:       return "Done";
-        case TaskStatus::Cancelled:  return "Cancelled";
-        case TaskStatus::Failed:     return "Failed";
+        case TaskStatus::Pending:      return "Pending";
+        case TaskStatus::Processing:   return "Processing";
+        case TaskStatus::Done:         return "Done";
+        case TaskStatus::Cancelled:    return "Cancelled";
+        case TaskStatus::Failed:       return "Failed";
+        case TaskStatus::Blocked:      return "Blocked";
+        case TaskStatus::LimitReached: return "LimitReached";
     }
     return "?";
+}
+
+// Короткое чтение строки-пути из stdin.
+static std::string readPath() {
+    std::string p;
+    std::getline(std::cin, p);
+    return p;
 }
 
 // Каталог со словарями для генератора анкет (задание 3в ЛР2):
@@ -66,7 +77,9 @@ int main(int argc, char** argv) {
     if (!fs::is_directory(dir)) { std::cerr << "Not a directory\n"; return 1; }
 
     watcher.start(dir);
-    // engine.start();
+    engine.start();
+
+    auto& policy = AccessPolicy::instance();
 
     bool quit = false;
     while (!quit) {
@@ -80,6 +93,14 @@ int main(int argc, char** argv) {
                   << " 6. Start async processing (all seen files)\n"
                   << " 7. Cancel async processing\n"
                   << " 8. Show async task status\n"
+                  << "--- Access policy (attempt limit / file blocking) ---\n"
+                  << "13. Block a file (threads will keep trying but get denied)\n"
+                  << "14. Unblock a file (allow processing again)\n"
+                  << "15. Set max processing attempts per file\n"
+                  << "16. Show attempt counters and blocked files\n"
+                  << "17. Pause worker threads (for clean demonstration)\n"
+                  << "18. Resume worker threads\n"
+                  << "19. Unblock ALL files\n"
                   << "--- LR2 task 3 (form validation) ---\n"
                   << " 9. Input and validate a form interactively\n"
                   << "10. Validate a single line (Surname Name Patronymic Date Phone Email)\n"
@@ -94,7 +115,8 @@ int main(int argc, char** argv) {
         case 1: {
             auto s = queue.snapshot();
             std::cout << "Queue size: " << s.size() << "\n";
-            std::cout << "Engine processed: " << engine.getProcessedCount() << " files\n"; // <--- ДОБАВИТЬ
+            std::cout << "Engine processed: " << getProcessedCount() << " files\n";
+            std::cout << "Max attempts per file: " << policy.maxAttempts() << "\n";
             break;
         }
         case 2: {

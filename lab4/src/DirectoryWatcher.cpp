@@ -1,5 +1,6 @@
 // DirectoryWatcher.cpp
 #include "DirectoryWatcher.h"
+#include "AccessPolicy.h"
 #include <iostream>
 namespace fs = std::filesystem;
 
@@ -63,17 +64,14 @@ void DirectoryWatcher::scanOnce() {
             const auto mtime = fs::last_write_time(entry, ec);
             if (ec) continue;
 
+            // Файл заблокирован политикой доступа — в очередь не попадает.
+            if (AccessPolicy::instance().isBlocked(path)) continue;
+
             auto kit = known_.find(path);
             if (kit == known_.end() || kit->second != mtime) {
                 known_[path] = mtime;
                 queue_.push(path);
             }
-        auto it = known_.find(path);
-        if (it == known_.end() || it->second != mtime) {
-            known_[path] = mtime;
-            queue_.push(path);
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     } catch (const fs::filesystem_error&) {
         // каталог временно недоступен - следующая итерация попробует снова
