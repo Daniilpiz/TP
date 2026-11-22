@@ -81,7 +81,7 @@ void AsyncProcessor::cancel() { cancelled_ = true; }
 // Вызывается из getStatus()/snapshot(): сначала под mtx_ собираем список
 // задач, затем (уже без mtx_, чтобы не держать два мьютекса сразу)
 // переспрашиваем политику и обновляем статусы.
-std::map<std::string, TaskStatus> AsyncProcessor::refreshBlockedStatuses() {
+std::map<std::string, TaskStatus> AsyncProcessor::refreshBlockedStatuses() const {
     std::vector<std::string> files;
     {
         std::lock_guard<std::mutex> lk(mtx_);

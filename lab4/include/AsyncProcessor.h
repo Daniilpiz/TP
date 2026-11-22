@@ -36,7 +36,7 @@ public:
 private:
     // Пересчёт статусов Blocked / LimitReached по данным AccessPolicy.
     // Возвращает актуальную карту «файл -> статус».
-    std::map<std::string, TaskStatus> refreshBlockedStatuses();
+    std::map<std::string, TaskStatus> refreshBlockedStatuses() const;
 
     const lab4::Lab2Adapter& lab2_;
     std::atomic<bool> running_{false};
@@ -47,6 +47,6 @@ private:
     std::shared_ptr<std::thread> runner_;
 
     mutable std::mutex mtx_;   // защищает runner_ и карты ниже
-    std::map<std::string, TaskStatus> status_;
+    mutable std::map<std::string, TaskStatus> status_;
     std::map<std::string, std::string> results_;
 };

@@ -235,6 +235,66 @@ int main(int argc, char** argv) {
                                           : "SELF-TEST FAILED (" + std::to_string(mismatches) + " mismatches)\n");
             break;
         }
+        case 13: {
+            // Блокировка файла: потоки продолжат пытаться его обрабатывать,
+            // каждая попытка будет засчитана и напечатана, но обработка не выполнится.
+            std::cout << "File to block: ";
+            std::string f = readPath();
+            if (f.empty()) { std::cout << "Empty path\n"; break; }
+            policy.block(f);
+            std::cout << "Blocked: " << f
+                      << " (threads will keep attempting, attempts are logged)\n";
+            break;
+        }
+        case 14: {
+            // Разблокировка файла: обработка снова разрешена (в пределах лимита попыток).
+            std::cout << "File to unblock: ";
+            std::string f = readPath();
+            if (f.empty()) { std::cout << "Empty path\n"; break; }
+            if (!policy.isBlocked(f)) { std::cout << "Not blocked: " << f << "\n"; break; }
+            policy.unblock(f);
+            std::cout << "Unblocked: " << f << " -> processing allowed again\n";
+            break;
+        }
+        case 15: {
+            std::cout << "New max attempts per file (current " << policy.maxAttempts() << "): ";
+            long long n = -1;
+            if (std::cin >> n && n >= 1) {
+                policy.setMaxAttempts(static_cast<std::size_t>(n));
+                std::cout << "Max attempts set to " << policy.maxAttempts() << "\n";
+            } else {
+                std::cout << "Invalid value\n";
+            }
+            std::cin.clear();
+            std::cin.ignore(1<<20, '\n');
+            break;
+        }
+        case 16: {
+            auto snap = policy.snapshot();
+            if (snap.empty()) { std::cout << "No attempts recorded yet\n"; break; }
+            std::cout << "Limit: " << policy.maxAttempts() << " attempts/file\n";
+            for (const auto& [f, info] : snap) {
+                std::cout << "  " << f
+                          << ": attempts=" << info.attempts
+                          << (info.blocked ? " [BLOCKED]" : "")
+                          << (info.exhausted ? " [LIMIT REACHED]" : "")
+                          << "\n";
+            }
+            break;
+        }
+        case 17:
+            engine.pauseWorkers();
+            std::cout << "Worker threads paused (block/unblock a file now, then resume)\n";
+            break;
+        case 18:
+            engine.resumeWorkers();
+            std::cout << "Worker threads resumed\n";
+            break;
+        case 19: {
+            std::size_t n = policy.unblockAll();
+            std::cout << "Unblocked " << n << " file(s)\n";
+            break;
+        }
         case 0:
             quit = true;
             break;
