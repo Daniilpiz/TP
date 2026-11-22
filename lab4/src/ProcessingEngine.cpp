@@ -1,6 +1,7 @@
 #include "ProcessingEngine.h"
 #include "FileProcessor.h"
 #include <algorithm>
+#include <iostream>
 
 ProcessingEngine::ProcessingEngine(ThreadSafeQueue<std::string>& queue,
                                    const lab4::Lab2Adapter& lab2)
@@ -19,9 +20,26 @@ void ProcessingEngine::start() {
 
 void ProcessingEngine::stop() {
     if (!running_.exchange(false)) return;
+    paused_ = false;
+    pauseCv_.notify_all();     // рабочие должны выйти из паузы и завершиться
     queue_.stop();
     for (auto& t : workers_) if (t.joinable()) t.join();
     workers_.clear();
+}
+
+void ProcessingEngine::pauseWorkers() {
+    bool expected = false;
+    if (paused_.compare_exchange_strong(expected, true)) {
+        std::cout << "[engine] workers paused\n";
+    }
+}
+
+void ProcessingEngine::resumeWorkers() {
+    if (paused_.exchange(false)) {
+        std::lock_guard<std::mutex> lk(pauseMtx_);
+        pauseCv_.notify_all();
+        std::cout << "[engine] workers resumed\n";
+    }
 }
 
 void ProcessingEngine::worker() {
@@ -31,12 +49,18 @@ void ProcessingEngine::worker() {
             std::lock_guard<std::mutex> lk(seenMtx_);
             seenFiles_.insert(path);
         }
+
+        // Пауза обработки (демонстрация блокировок): ждём снятия paused_.
+        {
+            std::unique_lock<std::mutex> lk(pauseMtx_);
+            pauseCv_.wait(lk, [&]{ return !paused_.load() || !running_.load(); });
+        }
+        if (!running_) return;
+
         std::string r = processFile(path, lab2_);
-        std::string r = processFile(path);        std::string r = processFile(path);
         {
             std::lock_guard<std::mutex> lk(resultsMtx_);
             results_[path] = r;
-            processedCount_++; // <--- ДОБАВИТЬ
         }
     }
 }

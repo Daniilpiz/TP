@@ -26,6 +26,7 @@ add_executable(Lab4
     src/DirectoryWatcher.cpp
     src/ProcessingEngine.cpp
     src/AsyncProcessor.cpp
+    src/AccessPolicy.cpp
     src/main.cpp
 )
 

@@ -142,6 +142,30 @@ Lab4/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Lab4.dir/build.make CMakeFiles/Lab4.dir/build
 .PHONY : Lab4/fast
 
+src/AccessPolicy.o: src/AccessPolicy.cpp.o
+.PHONY : src/AccessPolicy.o
+
+# target to build an object file
+src/AccessPolicy.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Lab4.dir/build.make CMakeFiles/Lab4.dir/src/AccessPolicy.cpp.o
+.PHONY : src/AccessPolicy.cpp.o
+
+src/AccessPolicy.i: src/AccessPolicy.cpp.i
+.PHONY : src/AccessPolicy.i
+
+# target to preprocess a source file
+src/AccessPolicy.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Lab4.dir/build.make CMakeFiles/Lab4.dir/src/AccessPolicy.cpp.i
+.PHONY : src/AccessPolicy.cpp.i
+
+src/AccessPolicy.s: src/AccessPolicy.cpp.s
+.PHONY : src/AccessPolicy.s
+
+# target to generate assembly for a file
+src/AccessPolicy.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Lab4.dir/build.make CMakeFiles/Lab4.dir/src/AccessPolicy.cpp.s
+.PHONY : src/AccessPolicy.cpp.s
+
 src/AsyncProcessor.o: src/AsyncProcessor.cpp.o
 .PHONY : src/AsyncProcessor.o
 
@@ -368,6 +392,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... Lab4"
 	@echo "... mdform"
+	@echo "... src/AccessPolicy.o"
+	@echo "... src/AccessPolicy.i"
+	@echo "... src/AccessPolicy.s"
 	@echo "... src/AsyncProcessor.o"
 	@echo "... src/AsyncProcessor.i"
 	@echo "... src/AsyncProcessor.s"

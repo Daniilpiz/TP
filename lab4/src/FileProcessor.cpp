@@ -1,37 +1,28 @@
 #include "FileProcessor.h"
 
+#include <iostream>
+
+std::atomic<int> processedCount{0};
+
+int getProcessedCount() { return processedCount.load(); }
+
+// Обработка файла с учётом политики доступа (AccessPolicy):
+//  - пока файл заблокирован, потоки получают отказ (попытка засчитывается);
+//  - после превышения лимита попыток файл больше не обрабатывается.
+// Возвращает пустую строку, если обработка запрещена политикой.
 std::string processFile(const std::string& path, const lab4::Lab2Adapter& lab2) {
+    std::string reason;
+    std::size_t attempt = 0, limit = 0;
+    if (!AccessPolicy::instance().tryAcquire(path, reason, attempt, limit)) {
+        // Заблокированный/исчерпавший лимит файл НЕ считается обработанным.
+        return std::string("DENIED: ") + reason +
+               " (attempt " + std::to_string(attempt) + "/" +
+               std::to_string(limit) + ")";
+    }
+
     // Задания 1 и 2 ЛР №2: валидация разметки + извлечение элементов.
     // Чтение построочное - большие файлы не загружаются в память целиком.
     auto rep = lab2.process(path);
+    ++processedCount;
     return lab4::Lab2Adapter::briefSummary(rep);
-}
-#include "Lab2Lib.h"
-#include <fstream>
-#include <sstream>
-#include <chrono>
-
-std::string processFile(const std::string& path) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    std::ifstream f(path);
-    if (!f) return "ERROR: cannot open " + path;
-
-    std::ostringstream buf;
-    buf << f.rdbuf();
-    const std::string text = buf.str();
-
-    std::ostringstream out;
-    out << "[" << lab2::languageName() << "] ";
-
-    std::string err;
-    if (!lab2::validate(text, err)) {
-        out << "INVALID: " << err;
-        return out.str();
-    }
-
-    auto el = lab2::extract(text);
-    out << "headers="    << el.headers.size()
-        << " paragraphs=" << el.paragraphs.size()
-        << " lists="      << el.lists.size();
-    return out.str();
 }

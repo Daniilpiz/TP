@@ -1,7 +1,9 @@
 // FileProcessor.h
 #pragma once
+#include <atomic>
 #include <string>
 
+#include "AccessPolicy.h"
 #include "Lab2Adapter.h"
 
 // Возвращает строковое представление результата обработки файла.
@@ -9,7 +11,8 @@
 // проверка текста на соответствие разметке Markdown + поиск заголовков,
 // абзацев и списков. Функция потокобезопасна.
 std::string processFile(const std::string& path, const lab4::Lab2Adapter& lab2);
-// ЗАМЕНИТЕ тело на вашу функцию из ЛР №2 / №3.
-std::string processFile(const std::string& path);
-std::atomic<int> processedCount_{0};
-int getProcessedCount() const { return processedCount_; }
+
+// Счётчик файлов, реально обработанных потоками (без учёта заблокированных
+// файлов и попыток, вышедших за лимит).
+extern std::atomic<int> processedCount;
+int getProcessedCount();
